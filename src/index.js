@@ -15,36 +15,36 @@ async function run() {
       apiKey: claudeApiKey,
       apiVersion: anthropicVersion,
     });
-    
+
     const context = github.context;
-    
+
     // Only run on pull requests
     if (context.eventName !== 'pull_request') {
       core.info('This action only works on pull requests.');
       return;
     }
-    
+
     // Get PR information
     const prNumber = context.payload.pull_request.number;
     const repo = context.repo;
-    
+
     // Fetch PR files
     const { data: files } = await octokit.rest.pulls.listFiles({
       ...repo,
       pull_number: prNumber,
     });
-    
+
     // Filter relevant files (excluding binary files, etc.)
-    const relevantFiles = files.filter(file => 
+    const relevantFiles = files.filter(file =>
       !file.filename.match(/\.(png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|mp3|mp4|mov|zip|tar|gz)$/i) &&
       file.status !== 'removed'
     );
-    
+
     if (relevantFiles.length === 0) {
       core.info('No relevant files to review.');
       return;
     }
-    
+
     // Prepare data for Claude
     const fileContents = await Promise.all(
       relevantFiles.map(async (file) => {
@@ -55,10 +55,10 @@ async function run() {
             path: file.filename,
             ref: context.payload.pull_request.head.sha,
           });
-          
+
           // Decode content if it's base64 encoded
           const content = Buffer.from(fileData.content, 'base64').toString();
-          
+
           return {
             filename: file.filename,
             status: file.status,
@@ -74,7 +74,7 @@ async function run() {
 
     // Filter out files we couldn't get content for
     const validFileContents = fileContents.filter(f => f !== null);
-    
+
     // Prepare the prompt for Claude
     const prompt = `
     You are conducting a code review of changes in a pull request. Please analyze the following files and provide feedback on:
@@ -103,32 +103,31 @@ async function run() {
     \`\`\`
     `).join('\n')}
     `;
-    
+
     // Send to Claude for analysis
     const response = await anthropic.messages.create({
-      model: "claude-3-sonnet-20240229",
+      model: "claude-3-7-sonnet-20250219",
       max_tokens: 4000,
       system: "You are an expert code reviewer analyzing pull request changes. Be concise but thorough. Focus on substantive issues in the changed code rather than style nitpicks. Include specific code references with line numbers when possible. Format your response using GitHub-flavored markdown.",
       messages: [
         { role: "user", content: prompt }
       ],
     });
-    
-    // Post the review as a comment on the PR
-    await octokit.rest.issues.createComment({
-      ...repo,
+
+    console.log(`Code Review Response: ${response.content[0].text}`);
+
+    await octokit.request('POST /repos/{owner}/{repo}/issues/{issue_number}/comments', {
+      owner: context.repo.owner,
+      repo: context.repo.repo,
       issue_number: prNumber,
-      body: `## Claude Code Review
-
-${response.content[0].text}
-
----
-*This review was generated automatically by [Claude Code Reviewer](https://github.com/ErikHellman/claude-code-reviewer)*
-      `
+      body: response.content[0].text,
+      headers: {
+        'X-GitHub-Api-Version': '2022-11-28'
+      }
     });
     
     core.info('Code review completed and posted as a comment.');
-    
+
   } catch (error) {
     core.setFailed(`Action failed: ${error.message}`);
   }
