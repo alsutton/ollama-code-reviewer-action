@@ -123,7 +123,7 @@ async function run() {
 ${response.content[0].text}
 
 ---
-*This review was generated automatically by [Claude Code Reviewer](https://github.com/marketplace/actions/claude-code-reviewer)*
+*This review was generated automatically by [Claude Code Reviewer](https://github.com/ErikHellman/claude-code-reviewer)*
       `
     });
     
