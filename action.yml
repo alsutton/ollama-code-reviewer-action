@@ -1,0 +1,19 @@
+name: 'Claude Code Reviewer'
+description: 'Reviews pull request changes using Claude AI and posts feedback as a comment'
+inputs:
+  github-token:
+    description: 'GitHub token for API access'
+    required: true
+  claude-api-key:
+    description: 'Claude API key'
+    required: true
+  anthropic-version:
+    description: 'Anthropic API version'
+    required: false
+    default: '2023-06-01'
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
+branding:
+  icon: 'code'
+  color: 'purple'

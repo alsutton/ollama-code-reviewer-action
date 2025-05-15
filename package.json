@@ -1,0 +1,29 @@
+{
+  "name": "claude-code-reviewer",
+  "version": "1.0.0",
+  "description": "GitHub Action to review PR changes using Claude AI",
+  "main": "src/index.js",
+  "scripts": {
+    "build": "ncc build src/index.js -o dist",
+    "test": "jest",
+    "lint": "eslint src/**/*.js"
+  },
+  "keywords": [
+    "github-action",
+    "code-review",
+    "claude",
+    "ai"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.11.1",
+    "@actions/github": "^6.0.1",
+    "@anthropic-ai/sdk": "^0.50.4"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "^0.38.1",
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0"
+  }
+}
