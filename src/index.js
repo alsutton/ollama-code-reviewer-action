@@ -1,21 +1,15 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
-const { Anthropic } = require('@anthropic-ai/sdk');
 
 async function run() {
   try {
     // Get inputs
     const githubToken = core.getInput('github-token', { required: true });
-    const claudeApiKey = core.getInput('claude-api-key', { required: true });
-    const anthropicVersion = core.getInput('anthropic-version');
+    const ollamaUrl = core.getInput('url', { required: true });
+    const ollamaModel = core.getInput('model', { required: true });
 
-    // Initialize GitHub and Claude clients
+    // Initialize repository client
     const octokit = github.getOctokit(githubToken);
-    const anthropic = new Anthropic({
-      apiKey: claudeApiKey,
-      apiVersion: anthropicVersion,
-    });
-
     const context = github.context;
 
     // Only run on pull requests
@@ -41,9 +35,42 @@ async function run() {
     );
 
     if (relevantFiles.length === 0) {
-      core.info('No relevant files to review.');
+      const message = `No relevant files to review.`
+
+      core.info(message);
+
+      await octokit.request('POST /repos/{owner}/{repo}/issues/{issue_number}/comments', {
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        issue_number: prNumber,
+        body: message,
+        headers: {
+          'X-GitHub-Api-Version': '2022-11-28'
+        }
+      });
+
       return;
     }
+
+    if (relevantFiles.length > 20) {
+      const message = `There are too many changed files to meaningfully review them (${relevantFiles.length} > 20)`
+      core.info(message);
+
+      await octokit.request('POST /repos/{owner}/{repo}/issues/{issue_number}/comments', {
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        issue_number: prNumber,
+        body: message,
+        headers: {
+          'X-GitHub-Api-Version': '2022-11-28'
+        }
+      });
+
+      return;
+
+    }
+
+    console.info(`Reviewing the following files; ${relevantFiles.map(file => `${file.filename}, ` )}`)
 
     // Prepare data for Claude
     const fileContents = await Promise.all(
@@ -104,31 +131,51 @@ async function run() {
     `).join('\n')}
     `;
 
-    // Send to Claude for analysis
-    const response = await anthropic.messages.create({
-      model: "claude-3-7-sonnet-20250219",
-      max_tokens: 4000,
-      system: "You are an expert code reviewer analyzing pull request changes. Be concise but thorough. Focus on substantive issues in the changed code rather than style nitpicks. Include specific code references with line numbers when possible. Format your response using GitHub-flavored markdown.",
-      messages: [
-        { role: "user", content: prompt }
-      ],
-    });
+    const ollamaRequest = {
+        model: ollamaModel,
+        prompt: prompt,
+        options: {"num_ctx": 16384},
+        stream: false
+    }
+    const requestBody = JSON.stringify(ollamaRequest)
 
-    console.log(`Code Review Response: ${response.content[0].text}`);
+    console.log(`Code Review Request sent to ${ollamaUrl}`);
+
+    // Send for analysis
+    const headers = {
+      "Content-Type": 'text/json'
+    }
+
+    const response = await fetch(
+      ollamaUrl,
+      {
+        method: 'POST',
+        body: requestBody,
+        headers: headers
+      });
+
+    if (!response.ok) {
+      core.setFailed(`Request to AI Server failed: ${response.statusText}`);
+      return;
+    }
+
+    const aiResponse = await response.text()
+    const review = JSON.parse(aiResponse).response
+    console.log(`Code Review Response: ${review}`);
 
     await octokit.request('POST /repos/{owner}/{repo}/issues/{issue_number}/comments', {
       owner: context.repo.owner,
       repo: context.repo.repo,
       issue_number: prNumber,
-      body: response.content[0].text,
+      body: review,
       headers: {
         'X-GitHub-Api-Version': '2022-11-28'
       }
     });
-    
-    core.info('Code review completed and posted as a comment.');
 
+    core.info('Code review completed and posted as a comment.');
   } catch (error) {
+    console.error("Error encountered", error)
     core.setFailed(`Action failed: ${error.message}`);
   }
 }

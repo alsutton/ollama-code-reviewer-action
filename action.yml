@@ -1,19 +1,20 @@
-name: 'Claude Code Reviewer'
-description: 'Reviews pull request changes using Claude AI and posts feedback as a comment'
+name: 'AI Code Reviewer'
+description: 'Reviews pull request changes using a local ollama instance and posts feedback as a comment'
 inputs:
   github-token:
     description: 'GitHub token for API access'
     required: true
-  claude-api-key:
-    description: 'Claude API key'
+  url:
+    description: 'Ollama URL'
     required: true
-  anthropic-version:
-    description: 'Anthropic API version'
-    required: false
-    default: '2023-06-01'
+    default: 'http://127.0.0.1:11434/api/generate'
+  model:
+    description: 'The LLM model to review the code with'
+    required: true
+    default: 'qwen2.5-coder:14b-instruct-q8_0'
 runs:
   using: 'node20'
-  main: 'index.js'
+  main: 'dist/index.js'
 branding:
   icon: 'code'
   color: 'purple'
