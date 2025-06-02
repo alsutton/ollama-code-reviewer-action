@@ -11,7 +11,7 @@ inputs:
   model:
     description: 'The LLM model to review the code with'
     required: true
-    default: 'qwen2.5-coder:14b-instruct-q8_0'
+    default: 'mistral-nemo:12b'
 runs:
   using: 'node20'
   main: 'dist/index.js'
