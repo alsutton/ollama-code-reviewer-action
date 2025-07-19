@@ -1,3 +1,5 @@
+import ollama from 'ollama'
+
 const core = require('@actions/core');
 const github = require('@actions/github');
 
@@ -103,64 +105,61 @@ async function run() {
     const validFileContents = fileContents.filter(f => f !== null);
 
     // Prepare the prompt for Claude
-    const prompt = `
-    You are conducting a code review of changes in a pull request. Please analyze the following files and provide feedback on:
-    
-    1. Code quality and best practices
-    2. Potential bugs or issues
-    3. Security concerns
-    4. Performance considerations
-    5. Suggestions for improvements
-    
-    For each file, focus on the changed portions (indicated in the "patch").
-    
-    Here are the files to review:
-    
-    ${validFileContents.map(file => `
-    ---
-    Filename: ${file.filename}
-    Status: ${file.status}
-    
-    Patch:
-    ${file.patch || '(No patch data available)'}
-    
-    Full Content:
-    \`\`\`
-    ${file.content}
-    \`\`\`
-    `).join('\n')}
-    `;
+    const messages = [{
+        role: 'system',
+        content: `
+            You are an expert code reviewer analyzing pull request changes. Be concise but
+            thorough. Focus on substantive issues in the changed code rather than style
+            nitpicks. Include specific code references with line numbers when possible.
+            Format your response using GitHub-flavored markdown.
 
-    const ollamaRequest = {
-        model: ollamaModel,
-        prompt: prompt,
-        options: {"num_ctx": 16384},
-        stream: false
-    }
-    const requestBody = JSON.stringify(ollamaRequest)
+            You will be given a collection of files and then asked for your feedback.
+            Please analyze the following files and provide feedback on:
 
-    console.log(`Code Review Request sent to ${ollamaUrl}`);
+            1. Potential bugs or issues
+            2. Security concerns
+            3. Performance considerations
+            4. Suggestions for improvements
 
-    // Send for analysis
-    const headers = {
-      "Content-Type": 'text/json'
-    }
+            For each file, focus on the changed portions (indicated in the "patch").
+        `}]
 
-    const response = await fetch(
-      ollamaUrl,
-      {
-        method: 'POST',
-        body: requestBody,
-        headers: headers
-      });
+    validFileContents.forEach(file => {
+        messages.push({
+            role: 'user',
+            content: `
+                Filename: ${file.filename}
+                Status: ${file.status}
 
-    if (!response.ok) {
-      core.setFailed(`Request to AI Server failed: ${response.statusText}`);
-      return;
+                Patch:
+                ${file.patch || '(No patch data available)'}
+
+                Full Content:
+                \`\`\`
+                ${file.content}
+                \`\`\`
+            `});
+    });
+
+    messages.push({
+        role: 'user',
+        content: `What is your feedback?`
+    });
+
+    console.log(`Sending code review request to ${ollamaUrl}`);
+
+    const response = await ollama.chat({
+      model: ollamaModel,
+      messages: messages,
+      stream: true
+    });
+
+    const reviewParts = [];
+    for await (const part of response) {
+      reviewParts.push(part.message.content);
     }
 
-    const aiResponse = await response.text()
-    const review = JSON.parse(aiResponse).response
+    const review = reviewParts.join("");
     console.log(`Code Review Response: ${review}`);
 
     await octokit.request('POST /repos/{owner}/{repo}/issues/{issue_number}/comments', {

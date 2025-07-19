@@ -11,15 +11,14 @@
   "keywords": [
     "github-action",
     "code-review",
-    "claude",
+    "ollama",
     "ai"
   ],
   "author": "",
   "license": "MIT",
   "dependencies": {
     "@actions/core": "^1.11.1",
-    "@actions/github": "^6.0.1",
-    "@anthropic-ai/sdk": "^0.50.4"
+    "@actions/github": "^6.0.1"
   },
   "devDependencies": {
     "@vercel/ncc": "^0.38.1",
