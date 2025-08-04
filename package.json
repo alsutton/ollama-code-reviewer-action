@@ -1,7 +1,7 @@
 {
-  "name": "claude-code-reviewer",
+  "name": "ollama-code-reviewer-action",
   "version": "1.0.0",
-  "description": "GitHub Action to review PR changes using Claude AI",
+  "description": "GitHub Action to review PR changes using an Ollama install",
   "main": "src/index.js",
   "scripts": {
     "build": "ncc build src/index.js -o dist",
@@ -18,7 +18,8 @@
   "license": "MIT",
   "dependencies": {
     "@actions/core": "^1.11.1",
-    "@actions/github": "^6.0.1"
+    "@actions/github": "^6.0.1",
+    "ollama": "^0.5.16"
   },
   "devDependencies": {
     "@vercel/ncc": "^0.38.1",
