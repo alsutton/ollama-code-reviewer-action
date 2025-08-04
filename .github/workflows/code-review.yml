@@ -4,13 +4,16 @@ on:
   pull_request:
     types: [opened, synchronize]
 
+permissions:
+  pull-requests: write
+
 jobs:
   review:
     runs-on: ai-reviewer
     steps:
       - uses: actions/checkout@v3
       - name: Ollama Code Review
-        uses: alsutton/ollama-code-reviewer-action
+        uses: alsutton/ollama-code-reviewer-action@main
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           url: "http://127.0.0.1:11434/"
