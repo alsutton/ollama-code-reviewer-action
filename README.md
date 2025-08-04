@@ -1,8 +1,8 @@
 # Ollama Code Reviewer
 
-A GitHub Action that uses an ollama install to review pull request changes and post feedback as a comment.
+A GitHub Action that uses an [ollama](https://ollama.com) install to review pull request changes and post feedback as a comment.
 
-This is based on the Claude work by [Eric Hellman](https://github.com/ErikHellman/claude-code-reviewer).
+This is based on the [Claude action by Eric Hellman](https://github.com/ErikHellman/claude-code-reviewer).
 
 ## Features
 
@@ -17,6 +17,9 @@ This is based on the Claude work by [Eric Hellman](https://github.com/ErikHellma
 
 Access to an ollama installation which is serving requests via HTTP (i.e. running `ollama serve`),
 which already has the models you wish to use (i.e. `ollama pull {model_name}` has already been executed).
+
+You may wish to set up a [self-hosted runner](https://docs.github.com/en/actions/how-tos/manage-runners/self-hosted-runners/add-runners),
+either on the same machine as ollama, or on the same LAN, to maximise performance.
 
 ### Usage
 
