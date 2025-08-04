@@ -1,7 +1,7 @@
 {
-  "name": "ollama-code-reviewer-action",
+  "name": "ollama-pr-reviewer-action",
   "version": "1.0.0",
-  "description": "GitHub Action to review PR changes using an Ollama install",
+  "description": "GitHub Action to review PR changes using Ollama via HTTP",
   "main": "src/index.js",
   "scripts": {
     "build": "ncc build src/index.js -o dist",

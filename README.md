@@ -1,4 +1,4 @@
-# Ollama Code Reviewer
+# Ollama PR review action
 
 A GitHub Action that uses an [ollama](https://ollama.com) install to review pull request changes and post feedback as a comment.
 

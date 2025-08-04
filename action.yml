@@ -1,11 +1,11 @@
-name: 'AI Code Reviewer'
-description: 'Reviews pull request changes using a local ollama instance and posts feedback as a comment'
+name: 'Ollama PR review action'
+description: 'Reviews pull request changes using a ollama instance (via HTTP) and posts feedback as a comment'
 inputs:
   github-token:
     description: 'GitHub token for API access'
     required: true
   url:
-    description: 'Ollama URL'
+    description: 'Ollama Install URL'
     required: true
     default: 'http://127.0.0.1:11434/api/generate'
   model:
