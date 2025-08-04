@@ -1,6 +1,8 @@
-# Claude Code Reviewer
+# Ollama Code Reviewer
 
-A GitHub Action that uses Claude AI to review pull request changes and post feedback as a comment.
+A GitHub Action that uses an ollama install to review pull request changes and post feedback as a comment.
+
+This is based on the Claude work by [Eric Hellman](https://github.com/ErikHellman/claude-code-reviewer).
 
 ## Features
 
@@ -13,7 +15,8 @@ A GitHub Action that uses Claude AI to review pull request changes and post feed
 
 ### Prerequisites
 
-- Claude API key from Anthropic
+Access to an ollama installation which is serving requests via HTTP (i.e. running `ollama serve`),
+which already has the models you wish to use (i.e. `ollama pull {model_name}` has already been executed).
 
 ### Usage
 
@@ -31,11 +34,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Claude Code Review
-        uses: your-username/claude-code-reviewer@v1
+      - name: Ollama Code Review
+        uses: alsutton/ollama-code-reviewer-action
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          claude-api-key: ${{ secrets.CLAUDE_API_KEY }}
+          url: ${{ secrets.OLLAMA_URL }}
+          model: ${{ secrets.OLLAMA_MODEL }}
 ```
 
 ### Inputs
@@ -43,8 +47,8 @@ jobs:
 | Input | Description | Required | Default |
 |-------|-------------|----------|---------|
 | `github-token` | GitHub token for API access | Yes | N/A |
-| `claude-api-key` | Claude API key | Yes | N/A |
-| `anthropic-version` | Anthropic API version | No | `2023-06-01` |
+| `url` | URL to access the ollama install | Yes | N/A |
+| `model` | The AI model to use for the review | Yes | N/A |
 
 ## Development
 
