@@ -53,6 +53,14 @@ jobs:
 | `url` | URL to access the ollama install | Yes | N/A |
 | `model` | The AI model to use for the review | Yes | N/A |
 
+### Example Secrets
+
+| Key | Example Value | Description |
+|-----|---------------|-------------|
+| github-token | _None_ | This will be set by the action runner and should not be set manually |
+| url | http://127.0.0.1:11434/ | This will work when the action runner and ollama are installed on the same machine |
+| model | mistral-nemo:12b | Use the [Mistral Nemo model](https://ollama.com/library/mistral-nemo:12b) |
+
 ## Development
 
 1. Clone the repository
