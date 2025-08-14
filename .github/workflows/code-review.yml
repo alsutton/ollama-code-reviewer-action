@@ -15,8 +15,6 @@ jobs:
     runs-on: ai-reviewer
     steps:
       - uses: actions/checkout@v3
-      - name: Pre‑load GPT‑OSS
-        run: ollama pull ${{ env.MODEL }}
       - name: Ollama Code Review
         uses: alsutton/ollama-code-reviewer-action@main
         with:

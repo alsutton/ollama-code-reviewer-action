@@ -20,6 +20,12 @@ async function run() {
       return;
     }
 
+	// Ensure we have the model available on the machine we're running on
+	await ollama.pull({
+		model: ollamaModel,
+		insecure: false,	// Don't pull from insecure sources
+	})
+
     // Get PR information
     const prNumber = context.payload.pull_request.number;
     const repo = context.repo;
