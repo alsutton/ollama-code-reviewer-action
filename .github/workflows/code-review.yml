@@ -7,14 +7,19 @@ on:
 permissions:
   pull-requests: write
 
+env:
+  MODEL: gpt-oss:latest
+
 jobs:
   review:
     runs-on: ai-reviewer
     steps:
       - uses: actions/checkout@v3
+      - name: Pre‑load GPT‑OSS
+        run: ollama pull ${{ env.MODEL }}
       - name: Ollama Code Review
         uses: alsutton/ollama-code-reviewer-action@main
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           url: "http://127.0.0.1:11434/"
-          model: "gpt-oss:latest"
+          model: ${{ env.MODEL }}
